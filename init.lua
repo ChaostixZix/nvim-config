@@ -1,0 +1,106 @@
+-- bootstrap lazy.nvim if not installed
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- plugins
+require("lazy").setup({
+  -- Neo-tree (file explorer)
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- icons
+      "MunifTanjim/nui.nvim",
+    },
+    config = function()
+      require("neo-tree").setup({
+        close_if_last_window = true,
+        filesystem = { follow_current_file = { enabled = true } },
+      })
+      -- auto open Neo-tree when starting with a folder
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+          local arg = vim.fn.argv(0)
+          if vim.fn.isdirectory(arg) == 1 then
+            require("neo-tree.command").execute({ dir = arg })
+          end
+        end,
+      })
+      -- keymap: toggle with <leader>e
+      vim.keymap.set("n", "<leader>e", ":Neotree toggle<CR>", { silent = true })
+    end,
+  },
+
+  -- Treesitter (better syntax highlighting)
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "lua", "python", "javascript", "html", "css" }, -- add more langs
+        highlight = { enable = true },
+        indent = { enable = true },
+      })
+    end,
+  },
+
+  -- Bufferline (tabs)
+  {
+    "akinsho/bufferline.nvim",
+    version = "*",
+    dependencies = "nvim-tree/nvim-web-devicons",
+    config = function()
+      require("bufferline").setup({
+        options = {
+          diagnostics = "nvim_lsp",
+          offsets = {
+            { filetype = "neo-tree", text = "File Explorer", separator = true },
+          },
+        },
+      })
+      -- keymaps for cycling buffers
+      vim.keymap.set("n", "<Tab>", ":BufferLineCycleNext<CR>", { silent = true })
+      vim.keymap.set("n", "<S-Tab>", ":BufferLineCyclePrev<CR>", { silent = true })
+    end,
+  },
+
+  -- Gitsigns (git gutter)
+  {
+    "lewis6991/gitsigns.nvim",
+    config = function()
+      require("gitsigns").setup()
+    end,
+  },
+})
+
+-- Terminal keymaps
+-- Single Esc stays in terminal app; double Esc escapes to Normal mode
+vim.keymap.set('t', '<Esc><Esc>', [[<C-\><C-n>]], {silent = true})
+
+-- Use Ctrl+q to close buffer instead (safe)
+vim.keymap.set("n", "<C-q>", ":bd<CR>", { noremap = true, silent = true })
+
+-- Keep Neovim alive when the last buffer is closed
+vim.api.nvim_create_autocmd("BufDelete", {
+  callback = function()
+    if vim.fn.bufnr('$') == 1 then
+      vim.cmd("enew")  -- open an empty [No Name] buffer
+    end
+  end,
+})
+
+-- General UI tweaks
+vim.o.number = true          -- line numbers
+vim.o.relativenumber = true  -- relative line numbers
+vim.o.termguicolors = true   -- better colors
