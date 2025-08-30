@@ -82,14 +82,21 @@ require("lazy").setup({
       require("gitsigns").setup()
     end,
   },
+
+  -- Buffer delete (safer buffer close)
+  {
+    "famiu/bufdelete.nvim",
+    config = function()
+      -- safer buffer close
+      vim.keymap.set("n", "<C-q>", ":Bdelete<CR>", { noremap = true, silent = true })
+    end,
+  },
 })
 
 -- Terminal keymaps
 -- Single Esc stays in terminal app; double Esc escapes to Normal mode
 vim.keymap.set('t', '<Esc><Esc>', [[<C-\><C-n>]], {silent = true})
 
--- Use Ctrl+q to close buffer instead (safe)
-vim.keymap.set("n", "<C-q>", ":bd<CR>", { noremap = true, silent = true })
 
 -- Keep Neovim alive when the last buffer is closed
 vim.api.nvim_create_autocmd("BufDelete", {
