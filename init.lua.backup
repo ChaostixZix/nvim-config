@@ -117,6 +117,3 @@ vim.opt.shell = "/usr/bin/zsh"
 vim.opt.shellcmdflag = "-c"
 vim.opt.shellquote = ""
 vim.opt.shellxquote = ""
-
--- Custom command alias for Neotree toggle
-vim.api.nvim_create_user_command('Ntt', 'Neotree toggle', {})
