@@ -91,12 +91,28 @@ require("lazy").setup({
       vim.keymap.set("n", "<C-q>", ":Bdelete<CR>", { noremap = true, silent = true })
     end,
   },
-{
-    "github/copilot.vim",
+  -- Copilot (AI code completion)
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
     config = function()
-      -- optional: enable Copilot automatically
-      vim.g.copilot_no_tab_map = true
-      vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
+      require("copilot").setup({
+        suggestion = {
+          enabled = true,
+          auto_trigger = true,
+          debounce = 75,
+          keymap = {
+            accept = "<C-J>",
+            accept_word = false,
+            accept_line = false,
+            next = "<M-]>",
+            prev = "<M-[>",
+            dismiss = "<C-]>",
+          },
+        },
+        panel = { enabled = false },
+      })
     end,
   },
 	{
@@ -113,6 +129,45 @@ require("lazy").setup({
     })
   end,
 },
+
+  -- nvim-cmp (completion engine)
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-cmdline",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+    },
+    config = function()
+      local cmp = require('cmp')
+
+      cmp.setup({
+        mapping = {
+          ['<Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif require('copilot.suggestion').is_visible() then
+              require('copilot.suggestion').accept()
+            else
+              fallback()  -- Ini yang akan mengaktifkan indentasi default
+            end
+          end, { 'i', 's' }),
+
+          ['<S-Tab>'] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            else
+              fallback()
+            end
+          end, { 'i', 's' }),
+        },
+      })
+    end,
+  },
+
 	})
 
 -- Terminal keymaps
