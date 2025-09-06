@@ -91,7 +91,29 @@ require("lazy").setup({
       vim.keymap.set("n", "<C-q>", ":Bdelete<CR>", { noremap = true, silent = true })
     end,
   },
-})
+{
+    "github/copilot.vim",
+    config = function()
+      -- optional: enable Copilot automatically
+      vim.g.copilot_no_tab_map = true
+      vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
+    end,
+  },
+	{
+  "nvimtools/none-ls.nvim",
+  dependencies = { "nvim-lua/plenary.nvim" },
+  config = function()
+    local null_ls = require("null-ls")
+    null_ls.setup({
+      sources = {
+        null_ls.builtins.formatting.prettier, -- JS/TS/HTML/CSS
+        null_ls.builtins.formatting.stylua,   -- Lua
+        null_ls.builtins.formatting.black,    -- Python
+      },
+    })
+  end,
+},
+	})
 
 -- Terminal keymaps
 -- Single Esc stays in terminal app; double Esc escapes to Normal mode
@@ -111,7 +133,7 @@ vim.api.nvim_create_autocmd("BufDelete", {
 vim.o.number = true          -- line numbers
 vim.o.relativenumber = true  -- relative line numbers
 vim.o.termguicolors = true   -- better colors
-vim.opt.shell = "/usr/bin/zsh"
+vim.opt.shell = "/opt/homebrew/bin/zsh"
 
 -- Zsh shell configuration
 vim.opt.shellcmdflag = "-c"
