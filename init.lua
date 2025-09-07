@@ -1,3 +1,15 @@
+-- Set leader key to space
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+-- Disable space default behavior in normal mode to prevent conflicts
+vim.keymap.set('n', '<Space>', '<Nop>', { silent = true })
+
+-- Set timeout for key sequences
+vim.opt.timeout = true
+vim.opt.timeoutlen = 1000  -- Wait 1 second for key sequence
+vim.opt.ttimeoutlen = 10   -- Wait 10ms for key codes
+
 -- bootstrap lazy.nvim if not installed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -115,6 +127,41 @@ require("lazy").setup({
       })
     end,
   },
+
+  -- CopilotChat (AI chat interface)
+  {
+    "CopilotC-Nvim/CopilotChat.nvim",
+    branch = "main", -- Use main branch for stability
+    dependencies = {
+      { "zbirenbaum/copilot.lua" }, -- or github/copilot.vim
+      { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
+    },
+    build = "make tiktoken", -- Only on MacOS or Linux
+    cmd = {
+      "CopilotChat",
+      "CopilotChatExplain",
+      "CopilotChatTests",
+      "CopilotChatFix",
+      "CopilotChatOptimize",
+      "CopilotChatDocs",
+      "CopilotChatToggle",
+    },
+    config = function()
+      require("CopilotChat").setup({
+        debug = false, -- Disable debugging for now
+        question_header = "## User ",
+        answer_header = "## Copilot ",
+        error_header = "## Error ",
+        separator = " ",
+        show_folds = true,
+        show_help = true,
+        auto_follow_cursor = true,
+        auto_insert_mode = false,
+        clear_chat_on_new_prompt = false,
+        context = nil,
+      })
+    end,
+  },
 	{
   "nvimtools/none-ls.nvim",
   dependencies = { "nvim-lua/plenary.nvim" },
@@ -169,6 +216,15 @@ require("lazy").setup({
   },
 
 	})
+
+-- CopilotChat keybindings (set outside plugin config to ensure they're always available)
+vim.keymap.set('n', '<leader>ce', '<cmd>CopilotChatExplain<cr>', { desc = 'CopilotChat - Explain code' })
+vim.keymap.set('v', '<leader>ce', ':CopilotChatExplain<cr>', { desc = 'CopilotChat - Explain selected code' })
+vim.keymap.set('n', '<leader>ct', '<cmd>CopilotChatTests<cr>', { desc = 'CopilotChat - Generate tests' })
+vim.keymap.set('v', '<leader>ct', ':CopilotChatTests<cr>', { desc = 'CopilotChat - Generate tests for selection' })
+vim.keymap.set('n', '<leader>cf', '<cmd>CopilotChatFix<cr>', { desc = 'CopilotChat - Fix code' })
+vim.keymap.set('v', '<leader>cf', ':CopilotChatFix<cr>', { desc = 'CopilotChat - Fix selected code' })
+vim.keymap.set('n', '<leader>cq', '<cmd>CopilotChatToggle<cr>', { desc = 'CopilotChat - Toggle chat' })
 
 -- Terminal keymaps
 -- Single Esc stays in terminal app; double Esc escapes to Normal mode
